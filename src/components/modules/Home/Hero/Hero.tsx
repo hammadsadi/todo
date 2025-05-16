@@ -29,7 +29,7 @@ export default function Hero() {
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: -100, opacity: 0 }}
             transition={{ duration: 0.5, ease: "easeOut" }}
-            className="fixed top-2 left-0 w-full md:w-1/2 md:left-1/4 bg-gray-100 dark:bg-gray-950 backdrop-blur-lg shadow-xl z-50 flex justify-center rounded-4xl border"
+            className="fixed top-2 left-0 w-full md:w-1/2 md:left-1/4 bg-gray-100 dark:bg-[#09090b] backdrop-blur-lg shadow-xl z-50 flex justify-center rounded-4xl border"
           >
             <div className="w-full px-4 py-4 flex justify-between items-center max-w-[600px]">
               <h1 className="text-xl font-bold">Hammad</h1>
@@ -56,7 +56,7 @@ export default function Hero() {
             </span>
           </h1>
           <p className="mt-4 text-xl dark:text-gray-300">
-            Full-Stack Developer & Software Engineering Student
+            Full-Stack Developer | Passionate Tech Learner
           </p>
           <p className="mt-2 dark:text-gray-400">
             Building elegant solutions to complex problems with modern
