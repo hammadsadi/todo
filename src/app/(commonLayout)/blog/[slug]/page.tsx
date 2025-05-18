@@ -1,20 +1,44 @@
 "use client";
+
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import {
-  Copy,
-  Heart,
-  MessageCircle,
-  Share2,
-  Bookmark,
-  Check,
-} from "lucide-react";
-import { format } from "date-fns";
+import { Copy, Heart, Check, MoreVertical } from "lucide-react";
+import { format, formatDistanceToNow } from "date-fns";
 import ReactMarkdown from "react-markdown";
-import { toast } from "sonner";
 import remarkGfm from "remark-gfm";
+import { Input } from "@/components/ui/input";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { ShareButtons } from "@/components/modules/BlogDetails/ShareOption/ShareButtons";
+import Link from "next/link";
+
+type Comment = {
+  id: number;
+  name: string;
+  content: string;
+  createdAt: Date;
+};
+
+const initialComments: Comment[] = [
+  {
+    id: 1,
+    name: "John Doe",
+    content: "This is an awesome blog post!",
+    createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
+  },
+  {
+    id: 2,
+    name: "Jane Smith",
+    content: "I learned a lot, thanks for sharing.",
+    createdAt: new Date(Date.now() - 6 * 60 * 60 * 1000),
+  },
+];
 
 const sampleBlog = {
   title: "Tailwind CSS Tips and Tricks",
@@ -26,7 +50,7 @@ const sampleBlog = {
   },
   content: `## Customizing Your Theme
 
-Tailwind makes it easy to customize your design system. You can extend or override the default theme in your \
+Tailwind makes it easy to customize your design system. You can extend or override the default theme in your 
 tailwind.config.js file:
 
 \`\`\`js
@@ -40,9 +64,9 @@ tailwind.config.js file:
 If you find yourself repeating the same utility combinations, you can extract them into custom CSS classes using \`@apply\`:
 
 \`\`\`css
-&#64;layer components {
+@layer components {
   .btn {
-    &#64;apply px-4 py-2 bg-blue-500 text-white;
+    @apply px-4 py-2 bg-blue-500 text-white;
   }
 }
 \`\`\`
@@ -79,41 +103,32 @@ Then use the \`dark:\` prefix in your markup:
 ## Conclusion
 
 Tailwind CSS provides powerful tools to build efficient, custom designs.`,
-  comments: [
-    { id: 1, author: "Jane", text: "This was super useful, thanks!" },
-    {
-      id: 2,
-      author: "Alex",
-      text: "Nice explanation about @apply and dark mode.",
-    },
-  ],
 };
 
 export default function BlogDetailsPage() {
   const [liked, setLiked] = useState(false);
-  const [saved, setSaved] = useState(false);
-  const [copiedCode, setCopiedCode] = useState(null);
-  const [comments, setComments] = useState(sampleBlog.comments);
+  const [copiedCode, setCopiedCode] = useState<string | null>(null);
+  const [comments, setComments] = useState<Comment[]>(initialComments);
   const [commentInput, setCommentInput] = useState("");
 
-  const handleCopyCode = (code) => {
+  const handleCopyCode = (code: string) => {
     navigator.clipboard.writeText(code);
     setCopiedCode(code);
-    toast.success("Code copied to clipboard!");
     setTimeout(() => setCopiedCode(null), 1500);
   };
 
-  const handleCopyLink = () => {
-    navigator.clipboard.writeText(window.location.href);
-    toast.success("Blog link copied!");
-  };
+  // const handleCopyLink = () => {
+  //   navigator.clipboard.writeText(window.location.href);
+  //   toast.success("Blog link copied!");
+  // };
 
   const handleAddComment = () => {
     if (!commentInput.trim()) return;
-    const newComment = {
+    const newComment: Comment = {
       id: Date.now(),
-      author: "You",
-      text: commentInput,
+      name: "You",
+      content: commentInput,
+      createdAt: new Date(),
     };
     setComments([newComment, ...comments]);
     setCommentInput("");
@@ -121,9 +136,9 @@ export default function BlogDetailsPage() {
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-8 space-y-6">
-      <button className="text-sm text-muted-foreground mb-2">
-        ← Back to Blogs
-      </button>
+      <Button size="sm" className="text-sm  mb-2 cursor-pointer text-white">
+        <Link href="/blog">← Back to Blogs</Link>
+      </Button>
       <h1 className="text-4xl font-bold leading-tight">{sampleBlog.title}</h1>
 
       <div className="flex items-center gap-4 text-sm text-muted-foreground">
@@ -147,91 +162,141 @@ export default function BlogDetailsPage() {
             className={`w-5 h-5 ${liked ? "fill-red-500 text-red-500" : ""}`}
           />
         </Button>
-        <Button variant="ghost" size="icon" onClick={handleCopyLink}>
-          <Copy className="w-5 h-5" />
-        </Button>
-        <Button variant="ghost" size="icon">
-          <Share2 className="w-5 h-5" />
-        </Button>
-        <Button variant="ghost" size="icon" onClick={() => setSaved(!saved)}>
-          <Bookmark
-            className={`w-5 h-5 ${saved ? "fill-blue-500 text-blue-500" : ""}`}
-          />
-        </Button>
+
+        <ShareButtons title={sampleBlog.title} slug={sampleBlog.title} />
       </div>
 
-      <div className="border-b flex">
-        <button className="px-4 py-2 text-sm font-medium border-b-2 border-primary">
-          Content
-        </button>
-        <button className="px-4 py-2 text-sm font-medium text-muted-foreground">
-          Comments
-        </button>
-      </div>
+      <Tabs defaultValue="content" className="w-full">
+        <TabsList className="w-full bg-muted p-1 rounded-lg justify-start">
+          <TabsTrigger
+            value="content"
+            className="data-[state=active]:!bg-[#09090b] data-[state=active]:!text-white flex-1 rounded-md px-4 py-2 text-sm font-medium transition-all"
+          >
+            Content
+          </TabsTrigger>
+          <TabsTrigger
+            value="comments"
+            className="data-[state=active]:!bg-[#09090b] data-[state=active]:!text-white flex-1 rounded-md px-4 py-2 text-sm font-medium transition-all"
+          >
+            Comments
+          </TabsTrigger>
+        </TabsList>
 
-      <div className="prose prose-invert max-w-none dark:prose-dark">
-        <ReactMarkdown
-          remarkPlugins={[remarkGfm]}
-          components={{
-            code({ children }) {
-              const codeStr = String(children).trim();
-              return (
-                <div className="relative my-4">
-                  <pre className="bg-gray-900 text-white p-4 rounded-md overflow-auto">
-                    <code>{codeStr}</code>
-                  </pre>
-                  <Button
-                    size="sm"
-                    className="absolute top-2 right-2 px-2 py-1"
-                    variant="secondary"
-                    onClick={() => handleCopyCode(codeStr)}
-                  >
-                    {copiedCode === codeStr ? (
-                      <span className="flex items-center gap-1">
-                        <Check className="w-4 h-4" />
-                        Copied
-                      </span>
-                    ) : (
-                      <span className="flex items-center gap-1">
-                        <Copy className="w-4 h-4" />
-                        Copy
-                      </span>
-                    )}
-                  </Button>
+        <TabsContent value="content" className="pt-6">
+          <div className="prose prose-invert max-w-none dark:prose-dark">
+            <ReactMarkdown
+              remarkPlugins={[remarkGfm]}
+              components={{
+                pre: (props) => {
+                  const child = props.children as React.ReactElement<{
+                    children: string;
+                  }>;
+                  const codeStr = (child?.props?.children || "").trim();
+
+                  return (
+                    <div className="relative my-4">
+                      <pre
+                        {...props}
+                        className="bg-gray-900 text-white p-4 rounded-md overflow-auto"
+                      >
+                        {props.children}
+                      </pre>
+                      <Button
+                        size="sm"
+                        className="absolute top-2 right-2 px-2 py-1"
+                        variant="secondary"
+                        onClick={() => handleCopyCode(codeStr)}
+                      >
+                        {copiedCode === codeStr ? (
+                          <span className="flex items-center gap-1">
+                            <Check className="w-4 h-4" /> Copied
+                          </span>
+                        ) : (
+                          <span className="flex items-center gap-1">
+                            <Copy className="w-4 h-4" /> Copy
+                          </span>
+                        )}
+                      </Button>
+                    </div>
+                  );
+                },
+                code: ({
+                  inline,
+                  className,
+                  children,
+                  ...props
+                }: {
+                  inline?: boolean;
+                  className?: string;
+                  children?: React.ReactNode;
+                }) => {
+                  const codeStr = String(children).trim();
+
+                  if (inline) {
+                    return (
+                      <code className="bg-muted px-1 py-0.5 rounded" {...props}>
+                        {codeStr}
+                      </code>
+                    );
+                  }
+
+                  return (
+                    <code className={className} {...props}>
+                      {codeStr}
+                    </code>
+                  );
+                },
+              }}
+            >
+              {sampleBlog.content}
+            </ReactMarkdown>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="comments" className="pt-6 space-y-6">
+          <div className="space-y-4">
+            {comments.map((comment) => (
+              <div
+                key={comment.id}
+                className="flex items-start justify-between bg-muted/40 p-4 rounded-lg"
+              >
+                <div className="space-y-1">
+                  <p className="text-sm font-medium">{comment.name}</p>
+                  <p className="text-sm text-muted-foreground">
+                    {comment.content}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    {formatDistanceToNow(comment.createdAt, {
+                      addSuffix: true,
+                    })}
+                  </p>
                 </div>
-              );
-            },
-          }}
-        >
-          {sampleBlog.content}
-        </ReactMarkdown>
-      </div>
 
-      <div className="space-y-4">
-        <h2 className="text-xl font-semibold">Comments</h2>
-        <div className="flex gap-2">
-          <input
-            className="flex-1 border border-input rounded-md px-3 py-2 text-sm"
-            placeholder="Add your comment..."
-            value={commentInput}
-            onChange={(e) => setCommentInput(e.target.value)}
-          />
-          <Button onClick={handleAddComment}>Post</Button>
-        </div>
-        <div className="space-y-2">
-          {comments.map((comment) => (
-            <div key={comment.id} className="flex items-start gap-3">
-              <Avatar className="w-8 h-8">
-                <AvatarFallback>{comment.author[0]}</AvatarFallback>
-              </Avatar>
-              <div className="bg-muted rounded-lg px-4 py-2 w-full">
-                <p className="text-sm font-medium">{comment.author}</p>
-                <p className="text-sm text-muted-foreground">{comment.text}</p>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="icon">
+                      <MoreVertical className="w-4 h-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem>Edit</DropdownMenuItem>
+                    <DropdownMenuItem>Delete</DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </div>
-            </div>
-          ))}
-        </div>
-      </div>
+            ))}
+          </div>
+
+          <div className="flex gap-2 items-center">
+            <Input
+              placeholder="Write a comment..."
+              value={commentInput}
+              onChange={(e) => setCommentInput(e.target.value)}
+            />
+            <Button onClick={handleAddComment}>Post</Button>
+          </div>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }
