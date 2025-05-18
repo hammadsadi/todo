@@ -4,41 +4,13 @@ import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Copy, Heart, Check, MoreVertical } from "lucide-react";
-import { format, formatDistanceToNow } from "date-fns";
+import { Copy, Heart, Check } from "lucide-react";
+import { format } from "date-fns";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import { Input } from "@/components/ui/input";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+
 import { ShareButtons } from "@/components/modules/BlogDetails/ShareOption/ShareButtons";
 import Link from "next/link";
-
-type Comment = {
-  id: number;
-  name: string;
-  content: string;
-  createdAt: Date;
-};
-
-const initialComments: Comment[] = [
-  {
-    id: 1,
-    name: "John Doe",
-    content: "This is an awesome blog post!",
-    createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
-  },
-  {
-    id: 2,
-    name: "Jane Smith",
-    content: "I learned a lot, thanks for sharing.",
-    createdAt: new Date(Date.now() - 6 * 60 * 60 * 1000),
-  },
-];
 
 const sampleBlog = {
   title: "Tailwind CSS Tips and Tricks",
@@ -108,30 +80,11 @@ Tailwind CSS provides powerful tools to build efficient, custom designs.`,
 export default function BlogDetailsPage() {
   const [liked, setLiked] = useState(false);
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
-  const [comments, setComments] = useState<Comment[]>(initialComments);
-  const [commentInput, setCommentInput] = useState("");
 
   const handleCopyCode = (code: string) => {
     navigator.clipboard.writeText(code);
     setCopiedCode(code);
     setTimeout(() => setCopiedCode(null), 1500);
-  };
-
-  // const handleCopyLink = () => {
-  //   navigator.clipboard.writeText(window.location.href);
-  //   toast.success("Blog link copied!");
-  // };
-
-  const handleAddComment = () => {
-    if (!commentInput.trim()) return;
-    const newComment: Comment = {
-      id: Date.now(),
-      name: "You",
-      content: commentInput,
-      createdAt: new Date(),
-    };
-    setComments([newComment, ...comments]);
-    setCommentInput("");
   };
 
   return (
@@ -149,7 +102,6 @@ export default function BlogDetailsPage() {
         <span>{sampleBlog.author.name}</span>
         <span>• {format(sampleBlog.createdAt, "MMMM d, yyyy")}</span>
         <span>• 7 min read</span>
-        <span>• 66 views</span>
       </div>
 
       <div className="w-full aspect-video bg-muted rounded-xl flex items-center justify-center text-muted-foreground">
@@ -254,47 +206,7 @@ export default function BlogDetailsPage() {
         </TabsContent>
 
         <TabsContent value="comments" className="pt-6 space-y-6">
-          <div className="space-y-4">
-            {comments.map((comment) => (
-              <div
-                key={comment.id}
-                className="flex items-start justify-between bg-muted/40 p-4 rounded-lg"
-              >
-                <div className="space-y-1">
-                  <p className="text-sm font-medium">{comment.name}</p>
-                  <p className="text-sm text-muted-foreground">
-                    {comment.content}
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    {formatDistanceToNow(comment.createdAt, {
-                      addSuffix: true,
-                    })}
-                  </p>
-                </div>
-
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon">
-                      <MoreVertical className="w-4 h-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuItem>Edit</DropdownMenuItem>
-                    <DropdownMenuItem>Delete</DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
-            ))}
-          </div>
-
-          <div className="flex gap-2 items-center">
-            <Input
-              placeholder="Write a comment..."
-              value={commentInput}
-              onChange={(e) => setCommentInput(e.target.value)}
-            />
-            <Button onClick={handleAddComment}>Post</Button>
-          </div>
+          <h2>Coming Soon</h2>
         </TabsContent>
       </Tabs>
     </div>
