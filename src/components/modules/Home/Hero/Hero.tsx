@@ -5,10 +5,12 @@ import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import { ModeToggle } from "../../Shared/ToggleTheme/ToggleTheme";
 import { Menu, X } from "lucide-react";
+import { useUser } from "@/context/UserContext";
 
 export default function Hero() {
   const [showNavbar, setShowNavbar] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { user } = useUser();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -35,9 +37,15 @@ export default function Hero() {
               <h1 className="text-xl font-bold">Hammad</h1>
               <div className="flex gap-6 items-center">
                 <Link href="#about">Home</Link>
-                <Link href="#projects">Projects</Link>
+                <Link href="projects">Projects</Link>
                 <Link href="#contact">Blogs</Link>
-                <ModeToggle />
+                <Button className="text-white">
+                  {user?.email ? (
+                    <Link href="/dashboard/profile">Dashboard</Link>
+                  ) : (
+                    <Link href="/access">Login</Link>
+                  )}
+                </Button>
               </div>
             </div>
           </motion.nav>
