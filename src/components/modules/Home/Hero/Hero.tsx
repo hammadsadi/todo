@@ -3,13 +3,10 @@ import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
-import { ModeToggle } from "../../Shared/ToggleTheme/ToggleTheme";
-import { Menu, X } from "lucide-react";
 import { useUser } from "@/context/UserContext";
 
 export default function Hero() {
   const [showNavbar, setShowNavbar] = useState(false);
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { user } = useUser();
 
   useEffect(() => {

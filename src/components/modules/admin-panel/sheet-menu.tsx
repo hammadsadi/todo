@@ -10,7 +10,6 @@ import {
   SheetTitle,
   SheetDescription,
 } from "@/components/ui/sheet";
-import logo from "../../../assets/logo.png";
 import Image from "next/image";
 import { Menu } from "./menu";
 
@@ -30,13 +29,6 @@ export function SheetMenu() {
             asChild
           >
             <Link href="/" className="flex items-center justify-center gap-4">
-              <Image
-                src={logo}
-                alt="dark favicon"
-                width={32}
-                height={32}
-                className="h-8 w-8"
-              />
               <SheetTitle className="font-bold text-lg">Sadi</SheetTitle>
               <SheetDescription className="sr-only">
                 Hammad Sadi

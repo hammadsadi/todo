@@ -5,8 +5,14 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { motion } from "framer-motion";
 import { Download } from "lucide-react";
+import Image from "next/image";
+import { TExperience } from "@/types/experience.types";
 
-export default function AboutSection() {
+export default function AboutSection({
+  experience,
+}: {
+  experience: TExperience[];
+}) {
   return (
     <section className=" text-gray-900 dark:text-white py-16 px-4">
       <div className="max-w-7xl mx-auto grid lg:grid-cols-3 gap-10 items-start">
@@ -37,20 +43,15 @@ export default function AboutSection() {
             <Card className="bg-gray-100 dark:bg-[#09090b] border  dark:text-gray-300 text-gray-900">
               <CardContent className="space-y-2 pt-4">
                 <h3 className="text-lg font-semibold">💼 Experience</h3>
-                <div>
-                  <p className="text-sm font-medium">Full Stack Developer</p>
-                  <p className="text-sm dark:text-gray-400">
-                    Team Project: Event Planner
-                  </p>
-                  <p className="text-sm dark:text-gray-400">May 2025</p>
-                </div>
-                <div>
-                  <p className="text-sm font-medium">Full Stack Developer</p>
-                  <p className="text-sm dark:text-gray-400">
-                    Team Project: Giftly
-                  </p>
-                  <p className="text-sm dark:text-gray-400">September 2024</p>
-                </div>
+                {experience?.map((item) => (
+                  <div key={item.id}>
+                    <p className="text-sm font-medium">{item.title}</p>
+                    <p className="text-sm dark:text-gray-400">
+                      {item.description}
+                    </p>
+                    {/* <p className="text-sm dark:text-gray-400">May 2025</p> */}
+                  </div>
+                ))}
               </CardContent>
             </Card>
             {/* Education */}
@@ -80,11 +81,14 @@ export default function AboutSection() {
           className="flex flex-col items-center justify-center space-y-4"
         >
           <div className="relative">
-            <img
+            <Image
+              width={500}
+              height={500}
               src="https://res.cloudinary.com/dro1r3fxd/image/upload/v1747240915/user_botwws.png"
               alt="Profile"
               className="w-36 h-36 object-cover rounded-full border-4 border-primary"
             />
+
             <Badge className="absolute -bottom-2 right-0 bg-primary text-white px-2 py-1 text-xs rounded-full">
               Open to Work
             </Badge>
@@ -104,11 +108,7 @@ export default function AboutSection() {
           </div>
 
           {/* Download Button */}
-          <a
-            href="https://www.dropbox.com/scl/fi/q4xrx79y71qi3i01yffja/Aathif_Zahir_CV.pdf?rlkey=7v6aicpcshu6h1diyq9cb0p2s&st=wbf2xkt8&dl=1"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
+          <a href="/Full Stack-Engineer-resume-of-hammad-sadi.pdf" download>
             <Button className="mt-4 bg-primary text-white ">
               <Download className="mr-2 h-4 w-4" />
               Download Resume
