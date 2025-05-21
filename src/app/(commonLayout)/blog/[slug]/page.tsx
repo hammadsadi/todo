@@ -1,123 +1,110 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Copy, Heart, Check } from "lucide-react";
+import { Heart } from "lucide-react";
 import { format } from "date-fns";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-
-import { ShareButtons } from "@/components/modules/BlogDetails/ShareOption/ShareButtons";
 import Link from "next/link";
+import { useParams } from "next/navigation";
+import { Skeleton } from "@/components/ui/skeleton";
+import { ShareButtons } from "@/components/modules/BlogDetails/ShareOption/ShareButtons";
+import rehypeRaw from "rehype-raw";
+import { CopyButton } from "@/components/modules/Shared/CopyButton/CopyButton";
+import { TBlog } from "@/types/blog.types"; // Assuming you have this type
+import { getSingleBlogs } from "@/services/BlogServices";
+import Image from "next/image";
 
-const sampleBlog = {
-  title: "Tailwind CSS Tips and Tricks",
-  createdAt: new Date("2023-06-22T10:00:00"),
-  image: "/blog-placeholder.png",
-  author: {
-    name: "John Doe",
-    avatar: "/author.jpg",
-  },
-  content: `## Customizing Your Theme
-
-Tailwind makes it easy to customize your design system. You can extend or override the default theme in your 
-tailwind.config.js file:
-
-\`\`\`js
-'72': '18rem',
-'84': '21rem',
-'96': '24rem',
-\`\`\`
-
-## Using @apply for Reusable Styles
-
-If you find yourself repeating the same utility combinations, you can extract them into custom CSS classes using \`@apply\`:
-
-\`\`\`css
-@layer components {
-  .btn {
-    @apply px-4 py-2 bg-blue-500 text-white;
-  }
-}
-\`\`\`
-
-## Responsive Design
-
-Tailwind makes responsive design easy with its mobile-first approach:
-
-\`\`\`html
-<div class="text-center md:text-left lg:text-right">
-  <!-- Responsive alignment -->
-</div>
-\`\`\`
-
-## Dark Mode
-
-Tailwind v2.0 introduced built-in dark mode support:
-
-\`\`\`js
-// tailwind.config.js
-module.exports = {
-  darkMode: 'class',
-}
-\`\`\`
-
-Then use the \`dark:\` prefix in your markup:
-
-\`\`\`html
-<div class="bg-white dark:bg-gray-800 text-black dark:text-white">
-  <!-- Dark mode content -->
-</div>
-\`\`\`
-
-## Conclusion
-
-Tailwind CSS provides powerful tools to build efficient, custom designs.`,
-};
-
-export default function BlogDetailsPage() {
+const BlogDetailsPage: React.FC = () => {
   const [liked, setLiked] = useState(false);
-  const [copiedCode, setCopiedCode] = useState<string | null>(null);
+  const [blog, setBlog] = useState<TBlog | null>(null);
+  const [loading, setLoading] = useState(true);
+  const params = useParams();
 
-  const handleCopyCode = (code: string) => {
-    navigator.clipboard.writeText(code);
-    setCopiedCode(code);
-    setTimeout(() => setCopiedCode(null), 1500);
-  };
+  useEffect(() => {
+    const fetchBlog = async () => {
+      try {
+        setLoading(true);
+        const { data } = await getSingleBlogs(params?.slug as string);
+        setBlog(data);
+      } catch (err) {
+        console.error("Failed to fetch blog:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (params?.slug) {
+      fetchBlog();
+    }
+  }, [params?.slug]);
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-8 space-y-6">
-      <Button size="sm" className="text-sm  mb-2 cursor-pointer text-white">
+      <Button size="sm" className="text-sm mb-2 text-white" asChild>
         <Link href="/blog">← Back to Blogs</Link>
       </Button>
-      <h1 className="text-4xl font-bold leading-tight">{sampleBlog.title}</h1>
 
+      {/* Title */}
+      {loading ? (
+        <Skeleton className="h-10 w-3/4 rounded" />
+      ) : (
+        <h1 className="text-4xl font-bold leading-tight">{blog?.title}</h1>
+      )}
+
+      {/* Author & Date */}
       <div className="flex items-center gap-4 text-sm text-muted-foreground">
-        <Avatar className="w-8 h-8">
-          <AvatarImage src={sampleBlog.author.avatar} />
-          <AvatarFallback>{sampleBlog.author.name[0]}</AvatarFallback>
-        </Avatar>
-        <span>{sampleBlog.author.name}</span>
-        <span>• {format(sampleBlog.createdAt, "MMMM d, yyyy")}</span>
-        <span>• 7 min read</span>
+        {loading ? (
+          <>
+            <Skeleton className="h-8 w-8 rounded-full" />
+            <Skeleton className="h-4 w-20" />
+            <Skeleton className="h-4 w-24" />
+          </>
+        ) : (
+          <>
+            <Avatar className="w-8 h-8">
+              <AvatarImage src={blog?.user?.image || "/author.jpg"} />
+              <AvatarFallback>{blog?.user?.name?.[0] || "A"}</AvatarFallback>
+            </Avatar>
+            <span>{blog?.user?.name || "Anonymous"}</span>
+            <span>• {format(new Date(blog?.createdAt!), "MMMM d, yyyy")}</span>
+          </>
+        )}
       </div>
 
-      <div className="w-full aspect-video bg-muted rounded-xl flex items-center justify-center text-muted-foreground">
-        <span>No image</span>
-      </div>
+      {/* Blog Image */}
+      {loading ? (
+        <Skeleton className="w-full aspect-video rounded-xl" />
+      ) : blog?.image ? (
+        <Image
+          width={400}
+          height={500}
+          src={blog.image}
+          alt={blog.title}
+          className="w-full aspect-video object-cover rounded-xl"
+        />
+      ) : (
+        <div className="w-full aspect-video bg-muted rounded-xl flex items-center justify-center text-muted-foreground">
+          <span>No image</span>
+        </div>
+      )}
 
+      {/* Like and Share */}
       <div className="flex gap-4 items-center text-muted-foreground">
         <Button variant="ghost" size="icon" onClick={() => setLiked(!liked)}>
           <Heart
             className={`w-5 h-5 ${liked ? "fill-red-500 text-red-500" : ""}`}
           />
         </Button>
-
-        <ShareButtons title={sampleBlog.title} slug={sampleBlog.title} />
+        {!loading && blog && (
+          <ShareButtons title={blog.title} slug={blog.slug} />
+        )}
       </div>
 
+      {/* Tabs */}
       <Tabs defaultValue="content" className="w-full">
         <TabsList className="w-full bg-muted p-1 rounded-lg justify-start">
           <TabsTrigger
@@ -135,74 +122,62 @@ export default function BlogDetailsPage() {
         </TabsList>
 
         <TabsContent value="content" className="pt-6">
-          <div className="prose prose-invert max-w-none dark:prose-dark">
-            <ReactMarkdown
-              remarkPlugins={[remarkGfm]}
-              components={{
-                pre: (props) => {
-                  const child = props.children as React.ReactElement<{
-                    children: string;
-                  }>;
-                  const codeStr = (child?.props?.children || "").trim();
+          {loading ? (
+            <div className="space-y-4">
+              <Skeleton className="h-6 w-full" />
+              <Skeleton className="h-6 w-full" />
+              <Skeleton className="h-6 w-1/2" />
+            </div>
+          ) : (
+            <div className="prose prose-invert max-w-none dark:prose-dark">
+              <ReactMarkdown
+                remarkPlugins={[remarkGfm]}
+                rehypePlugins={[rehypeRaw]}
+                components={{
+                  code({
+                    node,
+                    inline,
+                    className,
+                    children,
+                    ...props
+                  }: {
+                    node?: any;
+                    inline?: boolean;
+                    className?: string;
+                    children?: React.ReactNode;
+                    [key: string]: any;
+                  }) {
+                    if (inline) {
+                      return (
+                        <code
+                          className="bg-muted px-1 py-0.5 rounded"
+                          {...props}
+                        >
+                          {children}
+                        </code>
+                      );
+                    }
 
-                  return (
-                    <div className="relative my-4">
-                      <pre
-                        {...props}
-                        className="bg-gray-900 text-white p-4 rounded-md overflow-auto"
-                      >
-                        {props.children}
-                      </pre>
-                      <Button
-                        size="sm"
-                        className="absolute top-2 right-2 px-2 py-1"
-                        variant="secondary"
-                        onClick={() => handleCopyCode(codeStr)}
-                      >
-                        {copiedCode === codeStr ? (
-                          <span className="flex items-center gap-1">
-                            <Check className="w-4 h-4" /> Copied
-                          </span>
-                        ) : (
-                          <span className="flex items-center gap-1">
-                            <Copy className="w-4 h-4" /> Copy
-                          </span>
-                        )}
-                      </Button>
-                    </div>
-                  );
-                },
-                code: ({
-                  inline,
-                  className,
-                  children,
-                  ...props
-                }: {
-                  inline?: boolean;
-                  className?: string;
-                  children?: React.ReactNode;
-                }) => {
-                  const codeStr = String(children).trim();
+                    const codeString = Array.isArray(children)
+                      ? children.join("")
+                      : String(children);
 
-                  if (inline) {
                     return (
-                      <code className="bg-muted px-1 py-0.5 rounded" {...props}>
-                        {codeStr}
-                      </code>
+                      <div className="w-full overflow-auto rounded-lg bg-muted p-4 my-4">
+                        <CopyButton content={codeString}>
+                          <code className={`${className} text-sm`} {...props}>
+                            {codeString}
+                          </code>
+                        </CopyButton>
+                      </div>
                     );
-                  }
-
-                  return (
-                    <code className={className} {...props}>
-                      {codeStr}
-                    </code>
-                  );
-                },
-              }}
-            >
-              {sampleBlog.content}
-            </ReactMarkdown>
-          </div>
+                  },
+                }}
+              >
+                {blog?.description || "No content available."}
+              </ReactMarkdown>
+            </div>
+          )}
         </TabsContent>
 
         <TabsContent value="comments" className="pt-6 space-y-6">
@@ -211,4 +186,6 @@ export default function BlogDetailsPage() {
       </Tabs>
     </div>
   );
-}
+};
+
+export default BlogDetailsPage;

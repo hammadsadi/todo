@@ -1,4 +1,3 @@
-// app/components/PortfolioShowcase.tsx
 "use client";
 
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
@@ -7,36 +6,7 @@ import { motion } from "framer-motion";
 
 import TechStack from "./TechStack";
 import ProjectItem from "./ProjectItem";
-
-const projects = [
-  {
-    title: "IntervueAI",
-    description:
-      "Real-time mock interviews with AI, no forms or clicks just natural, personalized conversations.",
-    image:
-      "https://files.selar.co/product-images/2024/products/Viclabulary/project-management-selar.co-65f60d5694847.jpg",
-    live: "#",
-    details: "#",
-  },
-  {
-    title: "Blendy",
-    description:
-      "A social app where you can connect in real-time, log in with one click, share moments, posts instantly.",
-    image:
-      "https://files.selar.co/product-images/2024/products/Viclabulary/project-management-selar.co-65f60d5694847.jpg",
-    live: "#",
-    details: "#",
-  },
-  {
-    title: "WATCHit",
-    description:
-      "A video streaming app made for easy, personal entertainment and everything you love to binge.",
-    image:
-      "https://files.selar.co/product-images/2024/products/Viclabulary/project-management-selar.co-65f60d5694847.jpg",
-    live: "#",
-    details: "#",
-  },
-];
+import { TProject } from "@/types/project.types";
 
 const tabMotion = {
   initial: { opacity: 0, y: 20 },
@@ -45,7 +15,7 @@ const tabMotion = {
   transition: { duration: 0.4 },
 };
 
-export default function Portfolio() {
+export default function Portfolio({ projects }: { projects: TProject[] }) {
   return (
     <section id="portfolio" className="py-20  text-gray-900 dark:text-white">
       <div className="max-w-7xl mx-auto px-4 text-center">
@@ -84,7 +54,7 @@ export default function Portfolio() {
               {...tabMotion}
               className="grid md:grid-cols-3 gap-6 mt-10"
             >
-              {projects.map((project, idx) => (
+              {projects?.map((project, idx) => (
                 // <div
                 //   key={idx}
                 //   className="bg-gray-100 dark:bg-[#09090b] border  dark:text-gray-300 text-gray-900 rounded-xl p-4"

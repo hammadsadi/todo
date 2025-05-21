@@ -3,6 +3,8 @@
 // import { CustomModal } from "@/components/modules/shared/CustomModal";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { format } from "date-fns";
+
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -29,119 +31,108 @@ import {
   useReactTable,
   VisibilityState,
 } from "@tanstack/react-table";
-import { ArrowUpDown, ChevronDown, Edit, Eye, Trash2 } from "lucide-react";
+import { ArrowUpDown, ChevronDown, Edit, Eye, Pen, Trash2 } from "lucide-react";
 import Image from "next/image";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { ChangeEvent, useState } from "react";
 import { toast } from "sonner";
-import { MdBlock } from "react-icons/md";
-import { CgUnblock } from "react-icons/cg";
-import { TProjects } from "@/types/project.types";
 import Link from "next/link";
+import { TProject } from "@/types/project.types";
 
 export default function AdminDashboardProjectComponent({
   projects,
 }: {
-  projects: TProjects[];
+  projects: TProject[];
 }) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
 
-  const columns: ColumnDef<TProjects>[] = [
-    // {
-    //   accessorKey: "profileImage",
-    //   header: "Image",
-    //   cell: ({ row }) => (
-    //     <Image
-    //       src={
-    //         row.original.profileImage ||
-    //         "https://res.cloudinary.com/djlpoyqau/image/upload/v1741195711/clinets-profile_gwta7f.png"
-    //       }
-    //       alt={row.original.name}
-    //       width={40}
-    //       height={40}
-    //       className="rounded-full"
-    //     />
-    //   ),
-    // },
+  const columns: ColumnDef<TProject>[] = [
     {
-      accessorKey: "name",
-      header: ({ column }) => (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          Name <ArrowUpDown />
-        </Button>
+      accessorKey: "image",
+      header: "Image",
+      cell: ({ row }) => (
+        <Image
+          src={
+            row.original.image[0] ||
+            "https://res.cloudinary.com/djlpoyqau/image/upload/v1741195711/clinets-profile_gwta7f.png"
+          }
+          alt={row.original.slug}
+          width={40}
+          height={40}
+          className="rounded-full"
+        />
       ),
-      cell: ({ row }) => row.getValue("name"),
     },
     {
-      accessorKey: "username",
+      accessorKey: "title",
       header: ({ column }) => (
         <Button
           variant="ghost"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
-          Username <ArrowUpDown />
+          Title <ArrowUpDown />
         </Button>
       ),
-      cell: ({ row }) => row.getValue("username"),
+      cell: ({ row }) => row.getValue("title"),
     },
     {
-      accessorKey: "email",
+      accessorKey: "liveLink",
       header: ({ column }) => (
         <Button
           variant="ghost"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
-          Email <ArrowUpDown />
-        </Button>
-      ),
-      cell: ({ row }) => row.getValue("email"),
-    },
-    {
-      accessorKey: "role",
-      header: ({ column }) => (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          Role <ArrowUpDown />
+          Live Link <ArrowUpDown />
         </Button>
       ),
       cell: ({ row }) => (
-        <Badge
-          className={`${
-            row.getValue("role") === "ADMIN"
-              ? "bg-blue-400 hover:bg-blue-500"
-              : "bg-amber-400 hover:bg-amber-500"
-          }`}
+        <Link
+          href={row.original.liveLink}
+          className="text-primary"
+          target="_blank"
+          rel="noopener noreferrer"
         >
-          {row.getValue("role")}
+          Live View
+        </Link>
+      ),
+    },
+
+    {
+      accessorKey: "createdAt",
+      header: ({ column }) => (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
+          Published Date <ArrowUpDown />
+        </Button>
+      ),
+      cell: ({ row }) => (
+        <Badge className="bg-primary text-white">
+          {format(new Date(row.original.createdAt), "dd MMMM yyyy")}
         </Badge>
       ),
     },
     {
-      accessorKey: "status",
+      accessorKey: "Action",
       header: ({ column }) => (
         <Button
           variant="ghost"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
-          Status <ArrowUpDown />
+          Action <ArrowUpDown />
         </Button>
       ),
       cell: ({ row }) => (
-        <Badge
-          className={`${
-            row.getValue("status") === "ACTIVE"
-              ? "bg-blue-400 hover:bg-blue-500"
-              : "bg-amber-400 hover:bg-amber-500"
-          }`}
-        >
-          {row.getValue("status")}
-        </Badge>
+        <div className="flex gap-2">
+          <Button variant="destructive" size="sm">
+            <Trash2 />
+          </Button>
+          <Button variant="secondary" size="sm">
+            <Pen />
+          </Button>
+        </div>
       ),
     },
     // {

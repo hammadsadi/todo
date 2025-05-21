@@ -1,24 +1,17 @@
 "use client";
-import { TInvitation } from "@/types/invitation.type";
-import {
-  ColumnDef,
-  SortingState,
-  VisibilityState,
-  flexRender,
-  getCoreRowModel,
-  getPaginationRowModel,
-  getSortedRowModel,
-  getFilteredRowModel,
-  useReactTable,
-} from "@tanstack/react-table";
-import { ArrowUpDown, ChevronDown, Eye } from "lucide-react";
+// import ConfirmationBox from "@/components/modules/shared/ConfirmationBox";
+// import { CustomModal } from "@/components/modules/shared/CustomModal";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { format } from "date-fns";
+
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Input } from "@/components/ui/input";
 import {
   Table,
   TableBody,
@@ -27,112 +20,79 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
-import { useState } from "react";
+import {
+  ColumnDef,
+  flexRender,
+  getCoreRowModel,
+  getFilteredRowModel,
+  getPaginationRowModel,
+  getSortedRowModel,
+  SortingState,
+  useReactTable,
+  VisibilityState,
+} from "@tanstack/react-table";
+import { ArrowUpDown, ChevronDown, Edit, Eye, Pen, Trash2 } from "lucide-react";
+import Image from "next/image";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { ChangeEvent, useState } from "react";
+import { toast } from "sonner";
 import Link from "next/link";
-import { cn } from "@/lib/utils";
-import { format } from "date-fns";
-import { CustomModal } from "@/components/modules/shared/CustomModal";
-import CreateInvite from "./invitations/CreateInvite";
-import { TParticipant } from "@/types/participant.type";
-import Refund from "@/components/modules/Payment/Refund/Refund";
+import { TBlog } from "@/types/blog.types";
 
-export default function UserDashboardParticipationComponent({
-  participation,
+export default function AdminDashboardBlogComponent({
+  blog,
 }: {
-  participation: TParticipant[];
+  blog: TBlog[];
 }) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
-  const columns: ColumnDef<TParticipant>[] = [
+
+  const columns: ColumnDef<TBlog>[] = [
     {
-      accessorKey: "event.title",
+      accessorKey: "image",
+      header: "Image",
+      cell: ({ row }) => (
+        <Image
+          src={
+            row.original.image ||
+            "https://res.cloudinary.com/djlpoyqau/image/upload/v1741195711/clinets-profile_gwta7f.png"
+          }
+          alt={row.original.slug}
+          width={40}
+          height={40}
+          className="rounded-full"
+        />
+      ),
+    },
+    {
+      accessorKey: "title",
       header: ({ column }) => (
         <Button
           variant="ghost"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
-          Event <ArrowUpDown />
+          Title <ArrowUpDown />
+        </Button>
+      ),
+      cell: ({ row }) => row.getValue("title"),
+    },
+    {
+      accessorKey: "like",
+      header: ({ column }) => (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
+          Like <ArrowUpDown />
         </Button>
       ),
       cell: ({ row }) => (
-        <Badge variant="secondary">{row.original.event?.title}</Badge>
-      ),
-    },
-    // {
-    //   accessorKey: "inviter.name",
-    //   header: ({ column }) => (
-    //     <Button
-    //       variant="ghost"
-    //       onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-    //     >
-    //       Invited By <ArrowUpDown />
-    //     </Button>
-    //   ),
-    //   cell: ({ row }) => (
-    //     <Badge variant="outline">{row.original.inviter?.name}</Badge>
-    //   ),
-    // },
-    {
-      accessorKey: "fee",
-      header: ({ column }) => (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          Fee <ArrowUpDown />
-        </Button>
-      ),
-      cell: ({ row }) => <span>BDT{row.original.event.fee}</span>,
-    },
-    {
-      accessorKey: "hasPaid",
-      header: ({ column }) => (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          Has Paid <ArrowUpDown />
-        </Button>
-      ),
-      cell: ({ row }) => (
-        <Badge
-          className={`${
-            row.original.hasPaid
-              ? "bg-blue-400 hover:bg-blue-500"
-              : "bg-rose-400 hover:bg-rose-500"
-          }`}
-        >
-          {row.original.hasPaid ? "Yes" : "No"}
+        <Badge className="bg-primary text-white">
+          {row.original.like.length}
         </Badge>
       ),
     },
-    {
-      accessorKey: "status",
-      header: ({ column }) => (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          Status <ArrowUpDown />
-        </Button>
-      ),
-      cell: ({ row }) => (
-        <Badge
-          className={cn({
-            "bg-green-400 hover:bg-green-500":
-              row.original.status === "APPROVED",
-            "bg-red-400 hover:bg-red-500": row.original.status === "REJECTED",
-            "bg-yellow-400 hover:bg-yellow-500":
-              row.original.status === "PENDING",
-            "bg-gray-300-400 hover:bg-gray-500":
-              row.original.status === "BANNED",
-          })}
-        >
-          {row.original.status}
-        </Badge>
-      ),
-    },
+
     {
       accessorKey: "createdAt",
       header: ({ column }) => (
@@ -140,47 +100,90 @@ export default function UserDashboardParticipationComponent({
           variant="ghost"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
-          Start Date <ArrowUpDown />
+          Published Date <ArrowUpDown />
         </Button>
       ),
       cell: ({ row }) => (
-        <span className="text-sm">
-          {format(new Date(row.original?.event?.startDate), "PPP")}
-        </span>
+        <Badge className="bg-primary text-white">
+          {format(new Date(row.original.createdAt), "dd MMMM yyyy")}
+        </Badge>
       ),
     },
-
     {
-      id: "actions",
-      header: "Refund",
-      cell: ({ row }) => {
-        const invitation = row.original;
-        return (
-          <CustomModal
-            trigger={
-              <Button
-                disabled={invitation.status === "APPROVED"}
-                className={cn({
-                  "bg-green-400 hover:bg-green-500":
-                    row.original.status === "PENDING",
-                  "bg-rose-400 disabled:bg-rose-400 disabled:cursor-not-allowed hover:bg-red-500":
-                    row.original.status === "APPROVED",
-                })}
-                size="sm"
-              >
-                Check
-              </Button>
-            }
-            content={<Refund participant={invitation} />}
-            title="Confirm Refund"
-          />
-        );
-      },
+      accessorKey: "Action",
+      header: ({ column }) => (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
+          Action <ArrowUpDown />
+        </Button>
+      ),
+      cell: ({ row }) => (
+        <div className="flex gap-2">
+          <Button variant="destructive" size="sm">
+            <Trash2 />
+          </Button>
+          <Button variant="secondary" size="sm">
+            <Pen />
+          </Button>
+        </div>
+      ),
     },
+    // {
+    //   id: "actions",
+    //   header: "Actions",
+    //   cell: ({ row }) => {
+    //     const user = row.original;
+    //     return (
+    //       <div className="flex gap-2">
+    //         <CustomModal
+    //           trigger={
+    //             <Button variant="outline" size="sm">
+    //               <Edit className="h-4 w-4" />
+    //             </Button>
+    //           }
+    //           content={<p>Update Modal</p>}
+    //           title="Update Role"
+    //         />
+    //         {user.status === "ACTIVE" ? (
+    //           <ConfirmationBox
+    //             trigger={
+    //               <Button variant="destructive" size="sm">
+    //                 <MdBlock className="h-4 w-4 text-white" />
+    //               </Button>
+    //             }
+    //             // onConfirm={() => handleBlockUnblock(user.id, "BLOCKED")}
+    //             title="Are you sure?"
+    //           />
+    //         ) : (
+    //           <ConfirmationBox
+    //             trigger={
+    //               <Button variant="default" size="sm">
+    //                 <CgUnblock className="h-4 w-4 text-white" />
+    //               </Button>
+    //             }
+    //             // onConfirm={() => handleBlockUnblock(user.id, "ACTIVE")}
+    //             title="Are you sure?"
+    //           />
+    //         )}
+    //         <ConfirmationBox
+    //           trigger={
+    //             <Button variant="destructive" size="sm">
+    //               <Trash2 className="h-4 w-4 text-white" />
+    //             </Button>
+    //           }
+    //           // onConfirm={() => handleDelete(user.id)}
+    //           title="Are you sure?"
+    //         />
+    //       </div>
+    //     );
+    //   },
+    // },
   ];
 
   const table = useReactTable({
-    data: participation,
+    data: blog,
     columns,
     onSortingChange: setSorting,
     getCoreRowModel: getCoreRowModel(),
@@ -196,18 +199,12 @@ export default function UserDashboardParticipationComponent({
 
   return (
     <div className="w-full">
-      <div className="flex  justify-between items-center">
-        <h1 className="text-2xl font-bold">My Participation</h1>
-        <CustomModal
-          content={<CreateInvite />}
-          trigger={
-            <Button className="h-8 text-white" effect={"shine"}>
-              Invite
-            </Button>
-          }
-        />
-      </div>
       <div className="flex items-center py-4">
+        <div className="flex gap-2">
+          <Button size="sm" className="dark:text-white">
+            <Link href="/dashboard/admin/blogs/create">Add Blog</Link>
+          </Button>
+        </div>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="outline" className="ml-auto">
@@ -230,9 +227,9 @@ export default function UserDashboardParticipationComponent({
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
-      {participation?.length === 0 ? (
+      {blog?.length == 0 ? (
         <div className="flex items-center justify-center h-full">
-          <h1 className="text-2xl font-bold">No Participation Found</h1>
+          <h1 className="text-2xl font-bold">No Blog Found</h1>
         </div>
       ) : (
         <div className="rounded-md border">

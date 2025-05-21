@@ -1,24 +1,17 @@
 "use client";
-import { TInvitation } from "@/types/invitation.type";
-import {
-  ColumnDef,
-  SortingState,
-  VisibilityState,
-  flexRender,
-  getCoreRowModel,
-  getPaginationRowModel,
-  getSortedRowModel,
-  getFilteredRowModel,
-  useReactTable,
-} from "@tanstack/react-table";
-import { ArrowUpDown, ChevronDown, Eye } from "lucide-react";
+// import ConfirmationBox from "@/components/modules/shared/ConfirmationBox";
+// import { CustomModal } from "@/components/modules/shared/CustomModal";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { format } from "date-fns";
+
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Input } from "@/components/ui/input";
 import {
   Table,
   TableBody,
@@ -27,63 +20,72 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
+import {
+  ColumnDef,
+  flexRender,
+  getCoreRowModel,
+  getFilteredRowModel,
+  getPaginationRowModel,
+  getSortedRowModel,
+  SortingState,
+  useReactTable,
+  VisibilityState,
+} from "@tanstack/react-table";
+import { ArrowUpDown, ChevronDown, Edit, Eye, Pen, Trash2 } from "lucide-react";
+import Image from "next/image";
 import { useState } from "react";
+import { toast } from "sonner";
 import Link from "next/link";
-import { cn } from "@/lib/utils";
-import { format } from "date-fns";
-import { CustomModal } from "@/components/modules/shared/CustomModal";
-import CreateInvite from "./invitations/CreateInvite";
+import { TBlog } from "@/types/blog.types";
+import { TMessage } from "@/types/message.types";
 
-export default function UserDashboardInvitationComponent({
-  invitations,
+export default function AdminMessageDashboardComponent({
+  message,
 }: {
-  invitations: TInvitation[];
+  message: TMessage[];
 }) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
 
-  const columns: ColumnDef<TInvitation>[] = [
+  const columns: ColumnDef<TMessage>[] = [
     {
-      accessorKey: "event.title",
+      accessorKey: "email",
       header: ({ column }) => (
         <Button
           variant="ghost"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
-          Event <ArrowUpDown />
+          Email <ArrowUpDown />
+        </Button>
+      ),
+      cell: ({ row }) => row.getValue("email"),
+    },
+    {
+      accessorKey: "subject",
+      header: ({ column }) => (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
+          Subject <ArrowUpDown />
         </Button>
       ),
       cell: ({ row }) => (
-        <Badge variant="secondary">{row.original.event?.title}</Badge>
+        <p className="">{row.original.subject?.slice(0, 30)}</p>
       ),
     },
     {
-      accessorKey: "inviter.name",
+      accessorKey: "description",
       header: ({ column }) => (
         <Button
           variant="ghost"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
-          Invited By <ArrowUpDown />
+          Message <ArrowUpDown />
         </Button>
       ),
       cell: ({ row }) => (
-        <Badge variant="outline">{row.original.inviter?.name}</Badge>
-      ),
-    },
-    {
-      accessorKey: "user.name",
-      header: ({ column }) => (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          Invited To <ArrowUpDown />
-        </Button>
-      ),
-      cell: ({ row }) => (
-        <Badge variant="outline">{row.original.user?.name}</Badge>
+        <p className="">{row.original.description?.slice(0, 40)}</p>
       ),
     },
     {
@@ -93,80 +95,90 @@ export default function UserDashboardInvitationComponent({
           variant="ghost"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
-          Date <ArrowUpDown />
+          Published Date <ArrowUpDown />
         </Button>
       ),
       cell: ({ row }) => (
-        <span className="text-sm">
-          {format(new Date(row.original.createdAt), "PPP")}
-        </span>
+        <Badge className="bg-primary text-white">
+          {format(new Date(row.original.createdAt), "dd MMMM yyyy")}
+        </Badge>
       ),
     },
     {
-      accessorKey: "hasRead",
+      accessorKey: "Action",
       header: ({ column }) => (
         <Button
           variant="ghost"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
-          Read <ArrowUpDown />
+          Action <ArrowUpDown />
         </Button>
       ),
       cell: ({ row }) => (
-        <Badge
-          className={`${
-            row.original.hasRead
-              ? "bg-blue-400 hover:bg-blue-500"
-              : "bg-amber-400 hover:bg-amber-500"
-          }`}
-        >
-          {row.original.hasRead ? "Yes" : "No"}
-        </Badge>
+        <div className="flex gap-2">
+          <Button variant="destructive" size="sm">
+            <Trash2 />
+          </Button>
+          <Button variant="secondary" size="sm">
+            <Eye />
+          </Button>
+        </div>
       ),
     },
-    {
-      accessorKey: "status",
-      header: ({ column }) => (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          Status <ArrowUpDown />
-        </Button>
-      ),
-      cell: ({ row }) => (
-        <Badge
-          className={cn({
-            "bg-green-400 hover:bg-green-500":
-              row.original.status === "ACCEPTED",
-            "bg-red-400 hover:bg-red-500": row.original.status === "REJECTED",
-            "bg-yellow-400 hover:bg-yellow-500":
-              row.original.status === "PENDING",
-          })}
-        >
-          {row.original.status}
-        </Badge>
-      ),
-    },
-    {
-      id: "actions",
-      header: "Actions",
-      cell: ({ row }) => {
-        const invitation = row.original;
-        // For non-pending invitations, just show view button
-        return (
-          <Link href={`/events/${invitation.eventId}`}>
-            <Button variant="outline" size="sm">
-              <Eye className="h-4 w-4" />
-            </Button>
-          </Link>
-        );
-      },
-    },
+    // {
+    //   id: "actions",
+    //   header: "Actions",
+    //   cell: ({ row }) => {
+    //     const user = row.original;
+    //     return (
+    //       <div className="flex gap-2">
+    //         <CustomModal
+    //           trigger={
+    //             <Button variant="outline" size="sm">
+    //               <Edit className="h-4 w-4" />
+    //             </Button>
+    //           }
+    //           content={<p>Update Modal</p>}
+    //           title="Update Role"
+    //         />
+    //         {user.status === "ACTIVE" ? (
+    //           <ConfirmationBox
+    //             trigger={
+    //               <Button variant="destructive" size="sm">
+    //                 <MdBlock className="h-4 w-4 text-white" />
+    //               </Button>
+    //             }
+    //             // onConfirm={() => handleBlockUnblock(user.id, "BLOCKED")}
+    //             title="Are you sure?"
+    //           />
+    //         ) : (
+    //           <ConfirmationBox
+    //             trigger={
+    //               <Button variant="default" size="sm">
+    //                 <CgUnblock className="h-4 w-4 text-white" />
+    //               </Button>
+    //             }
+    //             // onConfirm={() => handleBlockUnblock(user.id, "ACTIVE")}
+    //             title="Are you sure?"
+    //           />
+    //         )}
+    //         <ConfirmationBox
+    //           trigger={
+    //             <Button variant="destructive" size="sm">
+    //               <Trash2 className="h-4 w-4 text-white" />
+    //             </Button>
+    //           }
+    //           // onConfirm={() => handleDelete(user.id)}
+    //           title="Are you sure?"
+    //         />
+    //       </div>
+    //     );
+    //   },
+    // },
   ];
 
   const table = useReactTable({
-    data: invitations,
+    data: message,
     columns,
     onSortingChange: setSorting,
     getCoreRowModel: getCoreRowModel(),
@@ -182,17 +194,6 @@ export default function UserDashboardInvitationComponent({
 
   return (
     <div className="w-full">
-      <div className="flex  justify-between items-center">
-        <h1 className="text-2xl font-bold">Pending Invitations</h1>
-        <CustomModal
-          content={<CreateInvite />}
-          trigger={
-            <Button className="h-8 text-white" effect={"shine"}>
-              Invite
-            </Button>
-          }
-        />
-      </div>
       <div className="flex items-center py-4">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -216,9 +217,9 @@ export default function UserDashboardInvitationComponent({
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
-      {invitations?.length === 0 ? (
+      {message?.length == 0 ? (
         <div className="flex items-center justify-center h-full">
-          <h1 className="text-2xl font-bold">No Invitations Found</h1>
+          <h1 className="text-2xl font-bold">No Message Found</h1>
         </div>
       ) : (
         <div className="rounded-md border">

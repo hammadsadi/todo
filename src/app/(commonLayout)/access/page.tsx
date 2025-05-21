@@ -1,14 +1,7 @@
 import React from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
+import { Card, CardContent } from "@/components/ui/card";
+
 import LoginForm from "@/components/modules/Auth/Login/LoginForm";
 import RegisterForm from "@/components/modules/Auth/Register/RegisterForm";
 const LoginPage = () => {

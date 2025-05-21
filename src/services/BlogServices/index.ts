@@ -3,11 +3,11 @@
 import { revalidateTag } from "next/cache";
 import { cookies } from "next/headers";
 
-// Create Project
-export const createProject = async (data: any) => {
+// Create Blog
+export const createBlog = async (data: any) => {
   try {
     const res = await fetch(
-      `${process.env.NEXT_PUBLIC_API_BASE_URL}/project/create`,
+      `${process.env.NEXT_PUBLIC_API_BASE_URL}/blog/create`,
       {
         method: "POST",
         headers: {
@@ -18,17 +18,17 @@ export const createProject = async (data: any) => {
         body: JSON.stringify(data),
       }
     );
-    revalidateTag("PROJECT");
+    revalidateTag("BLOG");
     return res.json();
   } catch (error: any) {
     return Error(error);
   }
 };
 
-// Get Projects
-export const getProjects = async () => {
+// Get Blogs
+export const getAllBlogs = async () => {
   try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/project`, {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/blog`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -36,21 +36,20 @@ export const getProjects = async () => {
           ?.value as string,
       },
       next: {
-        tags: ["PROJECT"],
+        tags: ["BLOG"],
       },
     });
-
     return res.json();
   } catch (error: any) {
     return Error(error);
   }
 };
 
-// Get Single Projects
-export const getSingleProjects = async (slug: string) => {
+// Get Single Blog
+export const getSingleBlogs = async (slug: string) => {
   try {
     const res = await fetch(
-      `${process.env.NEXT_PUBLIC_API_BASE_URL}/project/${slug}`,
+      `${process.env.NEXT_PUBLIC_API_BASE_URL}/blog/${slug}`,
       {
         method: "GET",
         headers: {
@@ -59,11 +58,10 @@ export const getSingleProjects = async (slug: string) => {
             ?.value as string,
         },
         next: {
-          tags: ["PROJECT"],
+          tags: ["BLOG"],
         },
       }
     );
-
     return res.json();
   } catch (error: any) {
     return Error(error);

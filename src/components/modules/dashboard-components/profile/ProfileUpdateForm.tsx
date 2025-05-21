@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/card";
 import { useState } from "react";
 import { toast } from "sonner";
+import { TUser } from "@/types/user.types";
 // import { IUser } from "@/types/user.types";
 // import { updateUserProfile } from "@/services/AuthServices";
 
@@ -40,7 +41,7 @@ const formSchema = z.object({
     }),
 });
 
-export default function ProfileUpdateForm({ user }: { user: IUser }) {
+export default function ProfileUpdateForm({ user }: { user: TUser }) {
   const [isLoading, setIsLoading] = useState(false);
 
   const form = useForm<z.infer<typeof formSchema>>({
